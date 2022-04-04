@@ -1,0 +1,100 @@
+---
+title: "An Introduction to Time Sereis Analysis and Forecasting"
+author: "Nadia Kennar, Research Associate with UKDS"
+date: '2022-03-31'
+output: html_document
+---
+
+
+## Introduction 
+
+This script provides an introduction to the components of time series analysis and forecasting. Time series analysis and forecasting are among the most common quantitative techniques employed by businesses and researchers. Largely used in big data, these methods are used to identify trends, clean your data, and to predict the future. This workshop begins by exploring the underlying concepts and components of time series analysis, then moves on to a code demonstration that uses open-sourced police recorded crime statistics to visually explore these components. Participants are invited to work alongside the code demonstration to gain hands-on and practical skills.
+
+At a more technical level we will be exploring the statistical components that make up a time series, such as the level, trend, seasonality and noise. 
+Additionally we will take a look at more complicated statistical terms exploring the importance of stationary and differencing.
+
+
+
+
+## Reference 
+
+
+The forecasts were replicated from Matthew Ashbys paper that explore 'the inital evidence between the coronovirus pandemic and crime in the UNited States' <https://crimesciencejournal.biomedcentral.com/articles/10.1186/s40163-020-00117-6>. 
+
+
+This webinar used  open source crime data via <https://cran.r-project.org/web/packages/crimedata/vignettes/introduction.html>. Also created by Mathhew Ashby, the data provides access to police-recorded crime data from various US cities using the Crime Open Database or CODE <https://osf.io/zyaqn/>. CODE simply provides the data in a more useful format for analysis. 
+
+
+
+## Set your working directory 
+
+You are invited to work alongside the code demonstration or to simply watch my screen as i talk through the code
+
+If you decide you want to work alongside the code demonstration I would suggest cloning the repo from Github. You can easily do this by starting up R and following these steps 
+
+*File -> New Project -> Version Control -> Git -> Paste the HTTPS lnk -> select the R work space folder and create the project*
+
+
+Tip: Click 'Open in New Session' as this will avoid confusion later one
+
+
+
+
+## Install Packages
+
+The 'crimedata' package includes information from 2010 to 2016 of each offence type, location and date/time
+
+
+```{r}
+install.packages("crimedata")
+    
+       #or 
+
+devtools::install_github("mpjashby/crimedata")
+
+```
+
+
+We will also be using various other packages for data manipulation and for running the time series analysis and forecasts, so ensure these are also installed.
+
+
+
+```{r}
+install.packages("dplyr")
+install.packages("fable")
+install.packages("tsibble")
+install.packages("ggplot2")
+install.packages("lubridate")
+install.packages("forecast")
+install.packages("TTR")
+```
+
+
+
+
+
+## Load Packages 
+
+You will then need to use the 'library' function to load the packages
+
+
+```{r}
+library(crimedata)
+library(dplyr)
+library(fable)
+library(tsibble)
+library(ggplot2)
+library(lubridate)
+library(forecast)
+library(TTR)
+
+```
+
+
+
+
+
+
+
+
+
