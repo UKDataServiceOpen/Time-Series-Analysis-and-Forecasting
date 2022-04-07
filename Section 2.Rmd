@@ -224,9 +224,6 @@ plot.ts(y)
 
 
 
-
-
-
 ## Decompositions 
 
 
@@ -248,15 +245,24 @@ plot(detroit_decomp)
 
 
 
-## Stationarity 
+
+
+
+
+## TimeDate Function - Accounting for Holidays 
+
+Cran Documentary <https://cran.r-project.org/web/packages/timeDate/timeDate.pdf>
+
+
+We can use the holidayLONDON function to return the bank holidays in London, it returns the values as true or false. The use of this becaomes important in creating your models for forecast. When it comes to visualising you can then include this trend in your data to see whethere that week had a bank holiday in it or not. 
+
 
 
 ```{r}
+x$bank_holiday <- x$week %in% yearweek(as_date(timeDate::holidayLONDON(year = 2020)))
+head(x)
 
 ```
-
-
-
 
 
 
