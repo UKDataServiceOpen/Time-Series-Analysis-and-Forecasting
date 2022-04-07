@@ -1,0 +1,262 @@
+---
+title: "Section 2"
+author: "Nadia Kennar"
+date: '2022-04-12'
+output: html_document
+---
+
+This section will use some open sourced crime data from the 'crimedata' package to examine the aims from the powerpoint slides;
+
+Aim:
+A) Explore the long-term trend and seasonality in ‘Burglary’ across the city of Detroit
+
+B) How the frequency of Burglary changed in Detroit in 2020 (the start of the pandemic) 
+
+
+
+
+
+## Download Data from Detroit 2015 - 2020
+
+Using the *list_crime_data* and the *get_crime_data* we can go ahead and select the years and city we would like to use. 
+
+The 
+
+
+```{r}
+
+#to get a full list of what years are available from which city we can use 
+list_crime_data()
+
+
+#read the data for Detroit, 2015 - 2020
+crime <- get_crime_data(
+  cities = "Detroit",
+  years = 2015:2020,     
+  type = "core"
+# you can add a filter(offense_gropp == "...") 
+  ) 
+
+
+```
+
+
+
+
+## Briefly Explore the Dataset 
+
+
+```{r}
+#summary of data
+head(crime)
+tail(crime)
+
+#group by offence type and count the data
+crime %>% group_by(offense_type) %>% count %>% View()
+
+#group by offence type and count the data
+crime %>% group_by(offense_type) %>% count %>% View()
+
+
+```
+
+
+
+## The Reliability of Crime Statistics
+
+
+You may have noticed that some of our crime counts are really low - what does this mean for your analysis? As mentioned in the slides, a small dataset can increase the amount of noise in your dataset - that is the uncontrolled variation. 
+
+One way we can reduce this noise is by grouping those crime categoires with less than an 'X' amount. 
+
+
+```{r}
+#group by offence type and count the data
+detroit %>% group_by(offense_group) %>% count() %>% View()
+
+#remove those small counts of crime to reduce unwanted variation 
+
+detroit <- detroit %>%
+  mutate(offense_group = as.character(offense_group))
+
+minor <- detroit %>% 
+  count(offense_group) %>%
+  filter(n < 1000) %>%
+  pull(offense_group)
+
+minor
+
+detroit <- mutate(
+  detroit,
+  offense_group = case_when(
+    offense_group %in% minor ~ "minor crimes (<1000)", 
+    TRUE ~ offense_group
+  )
+)
+
+#view the new category
+detroit %>% group_by(offense_group) %>% count() %>% View()
+
+```
+
+
+
+
+## Filter for just Burglary Offences
+
+```{r}
+#filter the variables of interest 
+detroit <- crime %>% 
+  filter(offense_group %in% "burglary/breaking & entering") %>%
+  select(city_name, offense_group, date_single)
+
+head(detroit)
+
+```
+
+
+
+
+
+## Object Class for Time/Date Variables
+
+
+```{r}
+class(detroit)
+class(detroit$offense_group)
+```
+
+As we can see our crime data set is currently just a 'tbl' or 'data.from. 
+
+However, some functions within the package 'fable' require you to turn a dataset into a 'ts object' You can still create time series plots without converting your data set, and we can do this within ggplot. 
+
+
+What about with the time variable?
+
+```{r}
+class(detroit$date_single)
+
+```
+
+
+We are presented with a class 'POSIXct / POSIXlt'. This refers to a class that stores both date AND time. Base R offer's two closely related classes. 
+
+
+
+
+## Plotting TS - without converting to a TS object (in GGPLOT)
+
+This will involve two steps 
+
+1) Converting your Time Variable to a readable class in R
+2) Counting the number of crime across each week 
+
+
+```{r}
+x <- detroit  %>%
+    mutate(week = as_date(yearweek(date_single))) %>%
+    count(week)
+x
+
+class(x$week)
+
+
+x %>% 
+  ggplot(aes(x = week, y = n)) +
+  geom_point() + 
+  geom_smooth(formula = y ~ x, method = "loess", span = 0.2) +
+  scale_x_date(date_breaks = "6 months", date_labels = "%b\n%Y", expand = c(0, 0)) +
+    scale_y_continuous(limits = c(0, NA), labels = scales::comma_format())
+
+```
+
+
+
+
+
+*Top Tip* 
+
+You can convert the date variable, count the crime and plot the time serires all under one line of code
+
+
+```{r}
+# detroit %>% 
+#     mutate(week = as_date(yearweek(date_single))) %>% 
+#     count(week) %>% 
+#     ggplot(aes(x = week, y = n)) +
+#     geom_point() +
+#     geom_smooth(formula = y ~ x, method = "loess", span = 0.2) +
+#     scale_x_date(date_breaks = "12 months", date_labels = "%b\n%Y", expand = c(0, 0)) +
+#     scale_y_continuous(limits = c(0, NA), labels = scales::comma_format()) +
+#     labs(
+#       title = "Weekly Burglary Count",
+#       x = "Date",
+#       y = "weekly Incident Count"
+#     ) +
+#     theme_minimal()
+```
+
+
+
+Although GGPlOT is really useful for advanced visualisaiton, it becomes difficult to understand the underlying components of time series. 
+
+This is where using a defined 'TS' object becomes useful, as we can run some decomposition models, examine stationarity etc etc 
+
+
+
+
+
+## Initial Time Series - Using TS Objects
+
+
+
+```{r}
+# x <- detroit  %>%
+#     mutate(week = as_date(yearweek(date_single))) %>%
+#     count(week)
+
+y <- ts(data = x$n, frequency = 52, start = c(2015,1), end = c(2020,12))
+
+plot.ts(y) 
+#autoplot(y)
+```
+
+
+
+
+
+
+
+## Decompositions 
+
+
+```{r}
+#forecast package
+y %>% decompose(type="additive") %>%
+  autoplot()
+y %>% decompose(type="multiplicative") %>%
+  autoplot()
+
+
+#stats package
+detroit_decomp <- decompose(births)
+plot(detroit_decomp)
+
+
+```
+
+
+
+
+## Stationarity 
+
+
+```{r}
+
+```
+
+
+
+
+
+

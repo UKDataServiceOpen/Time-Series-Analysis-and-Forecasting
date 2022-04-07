@@ -1,0 +1,169 @@
+---
+title: "Example 1"
+author: "Nadia Kennar"
+date: '2022-04-12'
+output: html_document
+---
+
+This section will cover the following 
+
+1. Time Series Data Representations 
+2. Converting Time Series Object 
+3. Making Decomposition Plots 
+4. Checking for Stationarity 
+
+
+
+
+## Time Series Data Representation 
+
+
+We will first start this code demo by exploring some different types of time series data 
+
+Typically when working with data in R, you need to decide the object class of your data at hand. This is important because the object class you choice affects more than the data is stored; it will dictate which functions will be available for data pre-processing, analysing and plotting. 
+
+Typically data in R is stored as a vector. However, when working with time series data we tend to have to convert to the right object class known as a 'time series object' 
+
+R has at least eight different implementations of data structures for represenint time series data. The list below identifies the most frequently used 
+
+> ts #base package 
+> zoo 
+> xts 
+> time series pacage 
+> tsibble 
+
+
+
+
+## King - (non-seasonal)
+
+We will first use a dataset named 'Kings' which is an example of a small time series data. It records the age of death for 42 successive king of englad.
+
+The dataset can be found here: <https://robjhyndman.com/tsdldata/misc/kings.dat>
+
+AS this data is a text file we can read in the data using the *scan()* function. 
+
+
+```{r}
+
+king <- scan('https://robjhyndman.com/tsdldata/misc/kings.dat', skip = 3) 
+
+king
+
+class(king)
+head(king)
+
+```
+
+
+To convert a dataframe to a timeseris object we can use the 'ts' function from the base package 
+
+
+```{r}
+king <- ts(king)
+
+class(king)
+head(king)
+```
+
+
+
+
+
+## Births - Seasonal Data 
+
+What happens if we have data that has been collected at more regualr intervals i.e. monthly, weekly, quartely etc. 
+
+If this is the case you would have to specifict the number of times that dat was collected pet year using the *frequency* parameter. 
+
+Lets explore this with a different dataset, named 'Births' which referes to the number of births per month in New York City, from 1946 to 1958. 
+
+The dataset can be found here: <"http://robjhyndman.com/tsdldata/data/nybirths.dat"> 
+nother simple data named 'births' highlights the 
+
+
+```{r}
+births <- scan("http://robjhyndman.com/tsdldata/data/nybirths.dat")
+births
+
+
+births <- ts(births, frequency = 12, start = c(1946, 1))
+births
+
+```
+
+
+
+
+
+
+## Plotting a Time Series Dataset 
+
+To plot both datasets (seaonsol or non-seasonal) you can use the
+*plot.ts* function from the ts package. 
+
+
+
+```{r}
+plot.ts(king)
+plot.ts(births)
+
+
+```
+
+
+
+
+## Decomposition
+
+
+```{r births}
+birth_decomp <- decompose(births)
+head(birth_decomp)
+plot(birth_decomp)
+
+
+# you can improve the graphics by using the autoplot function from the forecast package
+births %>% decompose %>% 
+  autoplot()
+```
+
+
+
+
+
+
+
+
+## Checking for Stationarity 
+
+To reiterate,a time series is said weakly stationary if 
+
+-  its mean is constant
+-  its standard deviation is constant 
+-  its cross covariance does not depend on time but depends only on the lag between the two series concerned. 
+
+There are two ways to check for this; 
+
+
+
+1. the graphical way 
+
+```{r}
+ts.plot(king)
+
+```
+
+From this figure, we can see that the mean value of the time series Z. Basically, the time series tends to oscillate around that red line. On the same line the dispersion of the oscillations around the mean value (representing the standard deviation) is increasing with time, meaning that the standard deviation is time-varying. As the mean and the standard deviation are time-varying, we conclude that the time series Z is nonstationary. 
+
+
+2. the statistical method
+
+```{r}
+adf.test(king)
+```
+
+
+we can conduct is the Augmented Dickey–Fuller (ADF) t-statistic test to find if the series has a unit root (a series with a trend line will have a unit root and result in a large p-value).
+
+
