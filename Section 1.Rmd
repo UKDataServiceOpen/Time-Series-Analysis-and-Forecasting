@@ -1,6 +1,6 @@
 ---
-title: "Example 1"
-author: "Nadia Kennar"
+title: "Section 1"
+author: "Nadia Kennar, Research Associate with UKDS"
 date: '2022-04-12'
 output: html_document
 ---
@@ -11,6 +11,7 @@ This section will cover the following
 2. Converting Time Series Object 
 3. Making Decomposition Plots 
 4. Checking for Stationarity 
+5. Applying Rolling Averages
 
 
 
@@ -24,12 +25,11 @@ Typically when working with data in R, you need to decide the object class of yo
 
 Typically data in R is stored as a vector. However, when working with time series data we tend to have to convert to the right object class known as a 'time series object' 
 
-R has at least eight different implementations of data structures for represenint time series data. The list below identifies the most frequently used 
+R has at least eight different implementations of data structures for representing time series data. The list below identifies the most frequently used packages
 
 > ts #base package 
 > zoo 
 > xts 
-> time series pacage 
 > tsibble 
 
 
@@ -37,9 +37,9 @@ R has at least eight different implementations of data structures for represenin
 
 ## King - (non-seasonal)
 
-We will first use a dataset named 'Kings' which is an example of a small time series data. It records the age of death for 42 successive king of englad.
+We will first use a data set named 'Kings' which is an example of a small time series data. It records the age of death for 42 successive king of Enlgand.
 
-The dataset can be found here: <https://robjhyndman.com/tsdldata/misc/kings.dat>
+The data set can be found here: <https://robjhyndman.com/tsdldata/misc/kings.dat>
 
 AS this data is a text file we can read in the data using the *scan()* function. 
 
@@ -47,23 +47,21 @@ AS this data is a text file we can read in the data using the *scan()* function.
 ```{r}
 
 king <- scan('https://robjhyndman.com/tsdldata/misc/kings.dat', skip = 3) 
-
 king
 
 class(king)
-head(king)
-
 ```
 
 
-To convert a dataframe to a timeseris object we can use the 'ts' function from the base package 
+
+To convert a dataframe to a time series object we can use the 'ts' function from the base package 
 
 
 ```{r}
 king <- ts(king)
 
 class(king)
-head(king)
+king
 ```
 
 
@@ -72,14 +70,13 @@ head(king)
 
 ## Births - Seasonal Data 
 
-What happens if we have data that has been collected at more regualr intervals i.e. monthly, weekly, quartely etc. 
+What happens if we have data that has been collected at more regular intervals i.e. monthly, weekly, quarterly etc. 
 
-If this is the case you would have to specifict the number of times that dat was collected pet year using the *frequency* parameter. 
+If this is the case you would have to specify the number of times that day was collected pet year using the *frequency* parameter. 
 
-Lets explore this with a different dataset, named 'Births' which referes to the number of births per month in New York City, from 1946 to 1958. 
+Lets explore this with a different dataset, named 'Births' which refers to the number of births per month in New York City, from 1946 to 1958. 
 
-The dataset can be found here: <"http://robjhyndman.com/tsdldata/data/nybirths.dat"> 
-nother simple data named 'births' highlights the 
+The dataset can be found here: <"http://robjhyndman.com/tsdldata/data/nybirths.dat">, This time we can call on some more parameters, the code to do so would look like this *ts(vector, start=, end=, frequency=)*
 
 
 ```{r}
@@ -107,14 +104,57 @@ To plot both datasets (seaonsol or non-seasonal) you can use the
 ```{r}
 plot.ts(king)
 plot.ts(births)
+```
 
+
+
+## Plotting TS objects using Ggplot
+
+```{r}
+library(ggfortify)
+autoplot(births)
+
+
+autoplot(births, ts.geom = "ribbon", fill = "grey")
+
+```
+
+
+
+## Plotting with the Forecast package 
+
+S/ARIMA = 
+Seasonal (S) / Autoregressive (AR) / Integrated (I) / Moving Average (MA)
+
+
+```{r}
+library(forecast)
+
+#run the model 
+births_arima <- auto.arima(births, seasonal = T)
+print(summary(births_arima))
+checkresiduals(births_arima)
+
+#make the forecast 
+births_forecast <- forecast(births_arima, h = 12)
+print(births_forecast)
+
+#plot 
+autoplot(births_forecast)
 
 ```
 
 
 
 
+
+
 ## Decomposition
+
+*ts = seasonality (s) + trend (t) + noise (n) + cycle (c)
+
+Additive compononent = [s+t+n*c]
+Multiplicative Component = [s*t*n*c]
 
 
 ```{r births}
@@ -122,13 +162,22 @@ birth_decomp <- decompose(births)
 head(birth_decomp)
 plot(birth_decomp)
 
-
 # you can improve the graphics by using the autoplot function from the forecast package
 births %>% decompose %>% 
   autoplot()
 ```
 
 
+
+## How to remove seasonality from your data (seasonal adjustment)?
+
+*To seasonally adjust a additive model (Time Series - Seasonal)
+*To seasonally adjust a multiplicative model (Time Series / Seasonal)
+
+```{r}
+adjusted_births <- births - birth_decomp$seasonal
+plot(adjusted_births)
+```
 
 
 
@@ -146,7 +195,6 @@ To reiterate,a time series is said weakly stationary if
 There are two ways to check for this; 
 
 
-
 1. the graphical way 
 
 ```{r}
@@ -154,16 +202,78 @@ ts.plot(king)
 
 ```
 
-From this figure, we can see that the mean value of the time series Z. Basically, the time series tends to oscillate around that red line. On the same line the dispersion of the oscillations around the mean value (representing the standard deviation) is increasing with time, meaning that the standard deviation is time-varying. As the mean and the standard deviation are time-varying, we conclude that the time series Z is nonstationary. 
+
 
 
 2. the statistical method
 
 ```{r}
-adf.test(king)
+library(tseries)
+adf.test(kings)
 ```
 
 
 we can conduct is the Augmented Dickey–Fuller (ADF) t-statistic test to find if the series has a unit root (a series with a trend line will have a unit root and result in a large p-value).
+
+
+
+
+
+
+## The Zoo Package - how to calculate basic rolling values 
+
+
+```{r}
+install.packages("zoo")
+require("zoo")
+
+#load the avergae temperatire by month and year in Nottingham
+nottem
+
+#plot 
+plot(nottem)
+
+#smooth 
+not_mean <- rollmean(nottem, 12,fill = NA, align = "right")
+not_mean
+plot(not_mean)
+
+```
+
+
+
+
+
+## The XTS package 
+
+XTS stands for eXtensible time series. It is an extension of the zoo object that includes a matrix and index. Xts is a matrix with associated times for each observation
+
+
+```{r}
+library(xts)
+
+#creating xts object
+data <- rnorm(10)
+dates <- seq(as.Date("2016-01-01"), length = 10, by = "days")
+xts <- xts(data, order.by = dates)
+xts
+
+
+#converting to a xts pbject 
+xts2 <- as.xts(nottem)
+xts2
+
+
+```
+
+
+
+
+
+
+
+
+
+
 
 

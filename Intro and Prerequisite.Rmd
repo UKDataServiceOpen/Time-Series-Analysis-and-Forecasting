@@ -1,7 +1,7 @@
 ---
 title: "An Introduction to Time Sereis Analysis and Forecasting"
 author: "Nadia Kennar, Research Associate with UKDS"
-date: '2022-03-31'
+date: '2022-04-2022'
 output: html_document
 ---
 
@@ -58,6 +58,9 @@ install.packages("ggplot2")
 install.packages("lubridate")
 install.packages("forecast")
 install.packages("TTR")
+install.packages("tseries")
+install.packages("readr")
+install.packages("ggfortify")
 ```
 
 ## Load Packages
@@ -73,5 +76,7 @@ library(ggplot2)
 library(lubridate)
 library(forecast)
 library(TTR)
-
+library(tseries)
+library(readr)
+library(ggfortify)
 ```
