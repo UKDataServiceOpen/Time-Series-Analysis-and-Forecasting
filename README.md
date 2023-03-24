@@ -1,4 +1,5 @@
-![UKDS Logo](./assets/images/UKDS_Logos_Col_Grey_300dpi.png)<br> <br>
+![UKDS Logo](./code/images/UKDS_Logos_Col_Grey_300dpi.png)<br>
+<br>
 
 # Time-Series-Analysis-and-Forecasting
 
