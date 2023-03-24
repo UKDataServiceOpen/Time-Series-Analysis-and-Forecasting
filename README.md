@@ -1,6 +1,5 @@
 ![UKDS Logo](./code/images/UKDS_Logos_Col_Grey_300dpi.png)<br>
 <br>
-
 # Time-Series-Analysis-and-Forecasting
 
 This repo contains the material from the UKDS workshop named 'An Introduction to Time Series Analysis and Forecasting'. In this repo you will find the slide deck as well as the R material from the live demonstration. 
