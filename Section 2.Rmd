@@ -13,6 +13,21 @@ A) Explore the long-term trend and seasonality in ‘Burglary’ across the city
 B) How the frequency of Burglary changed in Detroit in 2020 (the start of the pandemic) 
 
 
+## Load Packages
+
+```{r}
+library(crimedata)
+library(dplyr)
+library(fable)
+library(tsibble)
+library(ggplot2)
+library(lubridate)
+library(forecast)
+library(TTR)
+library(tseries)
+library(readr)
+library(ggfortify)
+```
 
 
 
@@ -26,6 +41,7 @@ The
 ```{r}
 
 #to get a full list of what years are available from which city we can use 
+#Downloading list of URLs for data files. This takes a few seconds but is only done once per session.
 list_crime_data()
 
 
