@@ -1,7 +1,7 @@
 ---
 title: "Section 2"
 author: "Nadia Kennar"
-date: '2022-04-12'
+date: '06-04-2023'
 output: html_document
 ---
 
@@ -16,17 +16,17 @@ B) How the frequency of Burglary changed in Detroit in 2020 (the start of the pa
 ## Load Packages
 
 ```{r}
-library(crimedata)
-library(dplyr)
-library(fable)
-library(tsibble)
-library(ggplot2)
-library(lubridate)
-library(forecast)
-library(TTR)
-library(tseries)
-library(readr)
-library(ggfortify)
+library(crimedata) # package containing the crime data 
+library(dplyr) #for data manipulation 
+library(fable) # for time series forecasting models
+library(tsibble) #for data manipulation 
+library(ggplot2) #for plotting
+library(lubridate) #for data manipulation 
+library(forecast) # to create S/ARIMA models
+library(TTR) # to create rolling averages
+library(tseries) #to create time series plot 
+library(readr) #to read in data
+library(ggfortify) #plotting tool for time series/PCA/cluster and survival analysis
 ```
 
 
@@ -214,9 +214,9 @@ You can convert the date variable, count the crime and plot the time serires all
 
 
 
-Although GGPlOT is really useful for advanced visualisaiton, it becomes difficult to understand the underlying components of time series. 
+Although GGPlOT is really useful for advanced visualization, it becomes difficult to understand the underlying components of time series. 
 
-This is where using a defined 'TS' object becomes useful, as we can run some decomposition models, examine stationarity etc etc 
+This is where using a defined 'TS' object becomes useful, as we can run some decomposition models, examine stationaryity etc etc 
 
 
 

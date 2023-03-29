@@ -1,7 +1,7 @@
 ---
 title: "An Introduction to Time Sereis Analysis and Forecasting"
 author: "Nadia Kennar, Research Associate with UKDS"
-date: '2022-04-2022'
+date: '06-04-2023'
 output: html_document
 ---
 
@@ -16,9 +16,9 @@ This script links the references used in the slide, and details some information
 
 ## Reference
 
-The forecasts from the SARIMA models were replicated from Matthew Ashbys paper that explore 'the inital evidence between the coronovirus pandemic and crime in the UNited States' <https://crimesciencejournal.biomedcentral.com/articles/10.1186/s40163-020-00117-6>.
+The forecasts from the SARIMA models were replicated from Matthew Ashby's paper that explore 'the initial evidence between the coronovirus pandemic and crime in the UNited States' <https://crimesciencejournal.biomedcentral.com/articles/10.1186/s40163-020-00117-6>.
 
-This webinar used open source crime data via <https://cran.r-project.org/web/packages/crimedata/vignettes/introduction.html>. Also created by Mathhew Ashby, the data provides access to police-recorded crime data from various US cities using the Crime Open Database (CODE) <https://osf.io/zyaqn/>. CODE simply provides the data in a more useful format for analysis.
+This webinar used open source crime data via <https://cran.r-project.org/web/packages/crimedata/vignettes/introduction.html>. Also created by Mathew Ashby, the data provides access to police-recorded crime data from various US cities using the Crime Open Database (CODE) <https://osf.io/zyaqn/>. CODE simply provides the data in a more useful format for analysis.
 
 
 ## Set your working directory
@@ -68,15 +68,15 @@ install.packages("ggfortify")
 You will then need to use the 'library' function to load the packages into your R Studios
 
 ```{r}
-library(crimedata)
-library(dplyr)
-library(fable)
-library(tsibble)
-library(ggplot2)
-library(lubridate)
-library(forecast)
-library(TTR)
-library(tseries)
-library(readr)
-library(ggfortify)
+library(crimedata) # package containing the crime data 
+library(dplyr) #for data manipulation 
+library(fable) # for time series forecasting models
+library(tsibble) #for data manipulation 
+library(ggplot2) #for plotting
+library(lubridate) #for data manipulation 
+library(forecast) # to create S/ARIMA models
+library(TTR) # to create rolling averages
+library(tseries) #to create time series plot 
+library(readr) #to read in data
+library(ggfortify) #plotting tool for time series/PCA/cluster and survival analysis
 ```

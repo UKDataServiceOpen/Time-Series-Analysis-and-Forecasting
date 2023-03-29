@@ -1,7 +1,7 @@
 ---
 title: "Section 1"
 author: "Nadia Kennar, Research Associate with UKDS"
-date: '2022-04-12'
+date: '06-04-2023'
 output: html_document
 ---
 
@@ -17,17 +17,17 @@ This section will cover the following
 ## Load Packages 
 
 ```{r}
-library(crimedata)
-library(dplyr)
-library(fable)
-library(tsibble)
-library(ggplot2)
-library(lubridate)
-library(forecast)
-library(TTR)
-library(tseries)
-library(readr)
-library(ggfortify)
+library(crimedata) # package containing the crime data 
+library(dplyr) #for data manipulation 
+library(fable) # for time series forecasting models
+library(tsibble) #for data manipulation 
+library(ggplot2) #for plotting
+library(lubridate) #for data manipulation 
+library(forecast) # to create S/ARIMA models
+library(TTR) # to create rolling averages
+library(tseries) #to create time series plot 
+library(readr) #to read in data
+library(ggfortify) #plotting tool for time series/PCA/cluster and survival analysis
 ```
 
 
@@ -112,9 +112,8 @@ births
 
 ## Plotting a Time Series Dataset 
 
-To plot both datasets (seaonsol or non-seasonal) you can use the
+To plot both datasets (seasonal or non-seasonal) you can use the
 *plot.ts* function from the ts package. 
-
 
 
 ```{r}
@@ -223,32 +222,73 @@ ts.plot(king)
 
 2. the statistical method
 
+We can use the Augmented Dickey–Fuller (ADF) t-statistic test to find if the series has a unit root (a series with a trend line will have a unit root and result in a large p-value).
+
+
 ```{r}
 library(tseries)
-adf.test(kings)
+adf.test(king)
 ```
 
 
-we can conduct is the Augmented Dickey–Fuller (ADF) t-statistic test to find if the series has a unit root (a series with a trend line will have a unit root and result in a large p-value).
 
+## The Zoo Package -
 
+The zoo package consists of the methods for totally ordered indexed observations. It aims at performing calculations containing irregular time series of numeric vectors, matrices & factors. The zoo package interfaces to all other time series packages on CRAN.
 
-
-
-
-## The Zoo Package - how to calculate basic rolling values 
+We are going to look how how to run rolling averages, in order to smooth our data 
 
 
 ```{r}
 install.packages("zoo")
 require("zoo")
 
-#load the avergae temperatire by month and year in Nottingham
-nottem
+#load the average temperature by month and year in Nottingham via the 'nottem' dataset. This exists in base R. 
+data("nottem")
 
 #plot 
 plot(nottem)
 
+#add some labels via the autoplot functio
+theme_set(theme_bw())
+autoplot(nottem) + xlab("") + ylab("") + ggtitle("Time Series Plot of the `nottem' Time-Series") + 
+    theme(plot.title = element_text(hjust = 0.5))
+
+#lets also view the seasonal subseries as well
+ggsubseriesplot(nottem)
+
+#before smoothing lets explore some descriptive statistics
+library(xtable)
+nottem2 <- xtable(nottem)
+head(nottem)
+summary(nottem2)
+
+#is the data monthly quartely, yearly etc>
+frequency(nottem)
+
+
+#lets decompose this data and plot the seperate trends
+decompose(nottem, type = "additive") 
+plot(decompose(nottem, type = "additive"))
+#with autoplot()
+autoplot(decompose(nottem, type = "additive")) + xlab("") + ylab("") + 
+    ggtitle("Decomposition plot of the `nottem' Time-Series") + 
+    theme(plot.title = element_text(hjust = 0.5))
+
+
+#and what about removing the seasonally adjusted data
+x <- decompose(nottem, "additive")
+nottem_adjusted <- nottem - x$seasonal
+plot(nottem_adjusted)
+#remember you can plot the separate components like so
+plot(x$seasonal)
+
+```
+
+
+## What happens when we smooth data?
+
+```{r}
 #smooth 
 not_mean <- rollmean(nottem, 12,fill = NA, align = "right")
 not_mean
@@ -264,26 +304,69 @@ plot(not_mean)
 
 XTS stands for eXtensible time series. It is an extension of the zoo object that includes a matrix and index. Xts is a matrix with associated times for each observation
 
+Lets have a look at how we would convert the nottem time series in a xts object and why we might want to do this.
 
 ```{r}
 library(xts)
 
-#creating xts object
-data <- rnorm(10)
-dates <- seq(as.Date("2016-01-01"), length = 10, by = "days")
-xts <- xts(data, order.by = dates)
-xts
 
 
-#converting to a xts pbject 
+#this is how you would convert a df to a xts object 
+data("nottem")
 xts2 <- as.xts(nottem)
-xts2
-
-
+xts2_m <- as.matrix(xts2)
+head(xts2_m)
 ```
 
 
+In order to understand the xts objects, let us create an xts object work that stores the number of hours that someone has worked along with some attributes about them like birth date. 
 
+```{r}
+library(xts)
+
+# Create the object data using 5 random numbers
+hours <- rnorm(20, mean = 8)
+
+# Create dates as a Date class object starting from 1922-01-01
+dates <- seq(as.Date("1922-01-01"), length = 20, by = "days")
+
+# Create birthday a POSIXct date class object
+dob <- as.POSIXct("1900-01-08")
+
+# Create xts object work
+work <- xts(x = hours, order.by = dates, born = dob)
+
+#We can look at the structure of an xts object using the str() function.
+str(work)
+```
+
+When working with time series, it will sometimes be necessary to separate your time series into its core data and index attributes for additional analysis and manipulation. The core data is the matrix portion of xts. You can separate this from the xts object using coredata(). The index portion of the xts object is available using the index() function. 
+
+## Lets explore the xts object
+
+```{r}
+# Extract the core data 
+hours <- coredata(work)
+
+# View the class of core data
+class(hours)
+
+# Extract the index data
+index <- index(work)
+
+# View the class of index
+class(index)
+
+```
+
+## Subset the data 
+
+It is often required when working with time series data to filter observations over a certain time range like a week, day or month. 
+
+```{r}
+last(work, n = '2 weeks')
+first(work, n = '2 weeks')
+```
 
 
 
