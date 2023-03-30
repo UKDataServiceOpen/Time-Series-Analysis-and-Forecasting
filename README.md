@@ -18,10 +18,24 @@ You can launch the full project by following the Binder link below, or feel free
 
 Please bare in mind that Binder can take sometime to launch!
 
+### Binder 
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting.git/HEAD)
+
+### Colab
+
+#### Intro and Prerequisites 
+[![Open In Colab](https://colab.research.google.com/assets/colab badge.svg)](https://colab.research.google.com/github/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting/blob/main/Intro%20and%20Prerequisite.ipynb)
+
+#### Section 1
+[![Open In Colab](https://colab.research.google.com/assets/colab badge.svg)](https://colab.research.google.com/github/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting/blob/main/Section%201.ipynb)
+
+#### Section 2
+[![Open In Colab](https://colab.research.google.com/assets/colab badge.svg)](https://colab.research.google.com/github/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting/blob/main/Section%202.ipynb
+## Further Information)
 
 
-
-## Further Information
+## Further Material
 
 Users should feel free to peruse the materials here as well as watch the recordings made during the various workshops on the UK Data Service YouTube channel. https://www.youtube.com/user/UKDataService
 
