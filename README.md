@@ -25,13 +25,13 @@ Please bare in mind that Binder can take sometime to launch!
 ### Colab
 
 #### Intro and Prerequisites 
-[![Open In Colab](https://colab.research.google.com/assets/colab badge.svg)](https://colab.research.google.com/github/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting/blob/main/Intro%20and%20Prerequisite.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting/blob/main/Intro%20and%20Prerequisite.ipynb)
 
 #### Section 1
-[![Open In Colab](https://colab.research.google.com/assets/colab badge.svg)](https://colab.research.google.com/github/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting/blob/main/Section%201.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting/blob/main/Section%201.ipynb)
 
 #### Section 2
-[![Open In Colab](https://colab.research.google.com/assets/colab badge.svg)](https://colab.research.google.com/github/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting/blob/main/Section%202.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting/blob/main/Section%202.ipynb)
 
 
 ## Further Material
