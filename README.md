@@ -31,8 +31,7 @@ Please bare in mind that Binder can take sometime to launch!
 [![Open In Colab](https://colab.research.google.com/assets/colab badge.svg)](https://colab.research.google.com/github/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting/blob/main/Section%201.ipynb)
 
 #### Section 2
-[![Open In Colab](https://colab.research.google.com/assets/colab badge.svg)](https://colab.research.google.com/github/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting/blob/main/Section%202.ipynb
-## Further Information)
+[![Open In Colab](https://colab.research.google.com/assets/colab badge.svg)](https://colab.research.google.com/github/UKDataServiceOpen/Time-Series-Analysis-and-Forecasting/blob/main/Section%202.ipynb)
 
 
 ## Further Material
