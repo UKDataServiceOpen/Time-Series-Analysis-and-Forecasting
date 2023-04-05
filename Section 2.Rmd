@@ -5,12 +5,16 @@ date: '06-04-2023'
 output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(crimedata)
+```
+
+## Introduction
+
+In this workshop, we'll be exploring time series analysis and forecasting using the `crimedata` package in R. Specifically, we'll be working with crime data from Detroit from 2015 to 2020. 
+
 This section will use some open sourced crime data from the 'crimedata' package to examine the aims from the powerpoint slides;
-
-Aim:
-A) Explore the long-term trend and seasonality in ‘Burglary’ across the city of Detroit
-
-B) How the frequency of Burglary changed in Detroit in 2020 (the start of the pandemic) 
 
 
 ## Load Packages
@@ -53,57 +57,67 @@ crime <- get_crime_data(
 # you can add a filter(offense_gropp == "...") 
   ) 
 
-
+head(crime)
 ```
 
 
 
 
-## Briefly Explore the Dataset 
-
+## Explore the Data
 
 ```{r}
-#summary of data
-head(crime)
-tail(crime)
+# Group the data by offense type
+offense_count <- crime %>% 
+  group_by(offense_group) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count))
 
-#group by offence type and count the data
-crime %>% group_by(offense_type) %>% count %>% View()
+# Print the top 10 offense types
+head(offense_count, 10)
 
-#group by offence type and count the data
-crime %>% group_by(offense_type) %>% count %>% View()
+# Plot the offense count graph
+ggplot(offense_count, aes(x = reorder(offense_group, -count), y = count)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Offense Count by Type", x = "Offense Type", y = "Count")
+
+# Select only Burglary
+burglary <- crime %>% 
+  filter(offense_group == "burglary/breaking & entering")
+
+# Print the first few rows of the burglary data
+head(burglary)
 
 
 ```
+
 
 
 
 ## The Reliability of Crime Statistics
 
-
 You may have noticed that some of our crime counts are really low - what does this mean for your analysis? As mentioned in the slides, a small dataset can increase the amount of noise in your dataset - that is the uncontrolled variation. 
 
-One way we can reduce this noise is by grouping those crime categoires with less than an 'X' amount. 
+One way we can reduce this noise (if you're interested in more than just burglary) is by grouping those crime categories with less than an 'X' amount. 
 
 
 ```{r}
 #group by offence type and count the data
-detroit %>% group_by(offense_group) %>% count() %>% View()
+crime %>% group_by(offense_group) %>% count() %>% View()
 
 #remove those small counts of crime to reduce unwanted variation 
-
-detroit <- detroit %>%
+crime <- crime %>%
   mutate(offense_group = as.character(offense_group))
 
-minor <- detroit %>% 
+minor <- crime %>% 
   count(offense_group) %>%
   filter(n < 1000) %>%
   pull(offense_group)
 
 minor
 
-detroit <- mutate(
-  detroit,
+crime <- mutate(
+  crime,
   offense_group = case_when(
     offense_group %in% minor ~ "minor crimes (<1000)", 
     TRUE ~ offense_group
@@ -111,73 +125,93 @@ detroit <- mutate(
 )
 
 #view the new category
-detroit %>% group_by(offense_group) %>% count() %>% View()
+crime %>% group_by(offense_group) %>% count() %>% View()
 
 ```
-
-
-
-
-## Filter for just Burglary Offences
-
-```{r}
-#filter the variables of interest 
-detroit <- crime %>% 
-  filter(offense_group %in% "burglary/breaking & entering") %>%
-  select(city_name, offense_group, date_single)
-
-head(detroit)
-
-```
-
-
-
-
 
 ## Object Class for Time/Date Variables
 
 
 ```{r}
-class(detroit)
-class(detroit$offense_group)
+class(burglary)
 ```
 
 As we can see our crime data set is currently just a 'tbl' or 'data.from. 
 
-However, some functions within the package 'fable' require you to turn a dataset into a 'ts object' You can still create time series plots without converting your data set, and we can do this within ggplot. 
+However, some functions within the package 'fable' require you to turn a data set into a 'ts object' You can still create time series plots without converting your data set, and we can do this within ggplot. 
 
-
-What about with the time variable?
+But first lets explore our time variable...
 
 ```{r}
-class(detroit$date_single)
-
+class(crime$date_single)
+class(burglary$date_single)
 ```
 
 
 We are presented with a class 'POSIXct / POSIXlt'. This refers to a class that stores both date AND time. Base R offer's two closely related classes. 
 
+You're first step would be to convert this date variable into a 'date' object so that R can recognize this and we can work with some of the packages that require you to identify a 'date' object. 
 
-
-
-## Plotting TS - without converting to a TS object (in GGPLOT)
-
-This will involve two steps 
-
-1) Converting your Time Variable to a readable class in R
-2) Counting the number of crime across each week 
+We can use the mutate function (from the dplyr package) to create the new variable. We also have to call on the as_date function (from the lubridate package) and the yearweek function (from the tsibble package) to create a new variable named 'week'  
 
 
 ```{r}
-x <- detroit  %>%
-    mutate(week = as_date(yearweek(date_single))) %>%
-    count(week)
-x
+burglary <- burglary %>%
+  mutate(week = as_date(yearweek(date_single)))
 
-class(x$week)
+head(burglary)
+```
 
 
-x %>% 
+
+
+
+## Count number of weekly crimes
+
+As established, we are interested in counting the weekly crimes which will allow for week to week comparisons. 
+
+```{r}
+# Create a new data frame with the count of weekly crimes
+weekly_crimes <- burglary %>%
+  mutate(week = as_date(yearweek(date_single))) %>%
+  count(week)
+
+# Print the first few rows of the weekly crimes data
+head(weekly_crimes)
+
+# Remove the first row of data
+weekly_crimes <- weekly_crimes[-1,]
+
+# Convert the data to a tsibble
+tsb_weekly_crimes <- as_tsibble(weekly_crimes, index = week)
+
+# Remove gaps
+tsb_weekly_crimes <- fill_gaps(tsb_weekly_crimes)
+
+# Remove incomplete weeks
+tsb_weekly_crimes <- tsb_weekly_crimes %>%
+  filter(!is.na(n))
+
+# Print the first few rows of the tsibble
+head(tsb_weekly_crimes)
+
+```
+
+
+
+
+## Plotting a time series plot using GGPLOT
+
+
+```{r}
+# Plot the weekly crimes using ggplot
+ggplot(weekly_crimes, aes(x = week, y = n)) +
+  geom_line() +
+  labs(title = "Burglary Crimes per Week", x = "Week", y = "Count")
+
+#or 
+
+weekly_crimes %>% 
   ggplot(aes(x = week, y = n)) +
   geom_point() + 
   geom_smooth(formula = y ~ x, method = "loess", span = 0.2) +
@@ -188,15 +222,13 @@ x %>%
 
 
 
-
-
 *Top Tip* 
 
-You can convert the date variable, count the crime and plot the time serires all under one line of code
+You can convert the date variable, count the crime and plot the time series all under one line of code
 
 
 ```{r}
-# detroit %>% 
+# burglary %>% 
 #     mutate(week = as_date(yearweek(date_single))) %>% 
 #     count(week) %>% 
 #     ggplot(aes(x = week, y = n)) +
@@ -220,47 +252,92 @@ This is where using a defined 'TS' object becomes useful, as we can run some dec
 
 
 
+## Plotting a time series object using TS object
 
+The first line creates a time series object called "ts_weekly_crimes" using the "ts" function. This function takes several arguments, including "data", which specifies the data to be used, "frequency", which specifies the number of data points per unit of time (in this case, 52 weekly data points per year), and "start" and "end", which specify the start and end dates of the time series. The data used here is the "n" column from the "weekly_crimes" data set.
 
-## Initial Time Series - Using TS Objects
+The second line creates a plot of the time series using the "autoplot" function from the "ggplot2" package. This function creates a line plot with default settings and takes the time series object as its argument. The "labs" function is used to add a title to the plot and label the x and y axes.
 
+Alternatively, the third line creates a plot of the time series using the built-in "plot.ts" function, which creates a line plot of the time series object.
 
 
 ```{r}
-# x <- detroit  %>%
-#     mutate(week = as_date(yearweek(date_single))) %>%
-#     count(week)
+# Convert the weekly_crimes data to a time series object
+ts_weekly_crimes <- ts(data = weekly_crimes$n, frequency = 52, start = c(2015,1), end = c(2020,12))
 
-y <- ts(data = x$n, frequency = 52, start = c(2015,1), end = c(2020,12))
 
-plot.ts(y) 
-#autoplot(y)
+# Plot the time series using ggplot
+autoplot(ts_weekly_crimes) +
+  labs(title = "Burglary Crimes per Week", x = "Week", y = "Count")
+
+#Or
+plot.ts(ts_weekly_crimes)
 ```
 
 
 
+## Check for stationarity 
 
-## Decompositions 
-
+When conducting a time series analysis, it is important to check whether the data is stationary or not. The Augmented Dickey-Fuller (ADF) test is a commonly used test for this purpose.
 
 ```{r}
-#forecast package
-y %>% decompose(type="additive") %>%
-  autoplot()
-y %>% decompose(type="multiplicative") %>%
-  autoplot()
-
-
-#stats package
-detroit_decomp <- decompose(births)
-plot(detroit_decomp)
-
+adf.test(weekly_crimes$n)
 
 ```
 
+In your case, the ADF test has been performed on the n variable in the weekly_crimes data. The test statistic is -4.5732 and the p-value is 0.01. The test has been conducted with a lag order of 6. The null hypothesis of the test is that the data is non-stationary.
+
+If the p-value is less than the significance level (usually 0.05), then we reject the null hypothesis and conclude that the data is stationary. However, in your case, the p-value is smaller than the printed p-value, which indicates that the p-value is less than 0.0005. This means that we can reject the null hypothesis with a high degree of confidence and conclude that the data is stationary.
+
+In summary, the result of the ADF test suggests that the n variable in the weekly_crimes data is stationary.
+
+If the data was found to be non-stationary, differencing could be used to transform the data into a stationary process. One common method for differencing is first differencing, which involves taking the difference between consecutive observations.
+
+To perform first differencing in R, you could use the diff() function. Here's an example of how you could apply first differencing to the weekly_crimes$n time series:
+
+
+```{r}
+# First order difference of time series
+#diff_ts <- diff(weekly_crimes$n)
+```
+
+
+## Running decomposition plots
+
+The first section of code uses the "stl" function from the "stats" package to run a seasonal decomposition of the time series. This function takes the time series object as its argument, and the "s.window" argument specifies the type of seasonal window to use. The resulting decomposition object is then passed to the "autoplot" function from the "ggplot2" package to create a plot of the decomposition components, with a title and axis labels added using the "labs" function.
+
+The second section of code uses the built-in "decompose" function to decompose the time series object into its trend, seasonal, and random components. The resulting decomposition object is then passed to the "plot" function to create a plot of the decomposition components.
+
+The third section of code uses the "decompose" function from the "forecast" package to decompose the time series object into its trend, seasonal, and random components, either additively or multiplicatively depending on the type specified in the function. The resulting decomposition object is then passed to the "autoplot" function from the "ggplot2" package to create a plot of the decomposition components.
+
+
+```{r}
+## Using STL package
+# Run a seasonal decomposition of the time series
+decomp_ts_weekly_crimes <- stl(ts_weekly_crimes, s.window = "periodic")
+autoplot(decomp_ts_weekly_crimes) +
+  labs(title = "Burglary Crimes per Week", x = "Week", y = "Count")
+
+
+## Using STATS package
+crime_decomp <- decompose(ts_weekly_crimes)
+plot(crime_decomp)
+#You can also extract individual trends 
+trend <- crime_decomp$trend
+plot(trend)
+seasonal <- crime_decomp$seasonal
+plot(seasonal)
+
+
+## Using FORECAST package 
+ts_weekly_crimes %>% decompose(type="additive") %>%
+  autoplot()
+tsb_weekly_crimes %>% decompose(type="multiplicative") %>%
+  autoplot()
 
 
 
+```
 
 
 
@@ -268,8 +345,6 @@ plot(detroit_decomp)
 ## TimeDate Function - Accounting for Holidays 
 
 Cran Documentary <https://cran.r-project.org/web/packages/timeDate/timeDate.pdf>
-
-
 We can use the holidayLONDON function to return the bank holidays in London, it returns the values as true or false. The use of this becaomes important in creating your models for forecast. When it comes to visualising you can then include this trend in your data to see whethere that week had a bank holiday in it or not. 
 
 
@@ -279,6 +354,40 @@ x$bank_holiday <- x$week %in% yearweek(as_date(timeDate::holidayLONDON(year = 20
 head(x)
 
 ```
+
+
+
+
+## SARIMA model 
+
+
+```{r}
+# Split the data into train and test sets
+train <- window(ts_weekly_crimes, end = c(2019, 52))
+test <- window(ts_weekly_crimes, start = c(2020, 1))
+
+# Fit the SARIMA model
+model <- auto.arima(train, seasonal = TRUE)
+
+# Predict the burglaries for 2020
+pred <- forecast(model, h = length(test))
+forecast <- forecast(fit, h = 52)
+
+# Plot the actual and predicted burglaries for 2020
+autoplot(cbind(test, forecast$mean)) +
+  labs(title = "Actual vs. Predicted Burglary Crimes per Week")
+
+# Plot the forecasts and the actual values
+plot(forecast, main = "Burglary Forecasts")
+lines(test, col = "red")
+legend("topright", legend = c("Forecast", "Actual"), col = c("blue", "red"), lty = 1)
+
+
+```
+
+
+
+
 
 
 
